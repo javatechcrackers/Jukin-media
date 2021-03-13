@@ -27,27 +27,28 @@ import com.covid.tracker.model.exception.CovidRapidAPIException;
 
 @Repository
 public class CovidRestRepositoryImpl implements CovidRestRepository {
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(CovidRestRepositoryImpl.class);
 
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@Value("https://covid-19-data.p.rapidapi.com/help/countries?format=json")
+	@Value("${get.countries.api.url}")
 	private String countriesApiUrl;
 
-	@Value("https://covid-19-data.p.rapidapi.com/totals?format=json")
+	@Value("${get.total.api.url}")
 	private String totalApiUrl;
 
-	@Value("https://covid-19-data.p.rapidapi.com/country?format={format}&name={name}")
+	@Value("${get.covid.name.api.url}}")
 	private String covidByNameUrl;
 
-	@Value("https://covid-19-data.p.rapidapi.com/country/code?format={format}&code={code}")
+	@Value("${get.covid.code.api.url}")
 	private String covidByCodeUrl;
 
-	@Value("covid-19-data.p.rapidapi.com")
+	@Value("${api.host}")
 	private String apiHost;
 
-	@Value("cc119a2a07mshb6adc33a3e346b9p1c17e8jsn6e17f47f3331")
+	@Value("${api.key}")
 	private String apiKey;
 
 	@Override
@@ -67,7 +68,11 @@ public class CovidRestRepositoryImpl implements CovidRestRepository {
 			}
 			LOGGER.info("End of Rest Template Exhange and response received {}  with size ==> ", resp, resp.size());
 			return response.getBody();
-		} catch (Exception e) {
+		}catch (CovidRapidAPIException e){
+			throw new CovidRapidAPIException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage(),
+					"Rapid API is currently Down. Please try after sometime.");
+		}
+		catch (Exception e) {
 			LOGGER.error("Exception occurred {}", e);
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(),
 					"Exception Occurred While Getting Data from Service");
@@ -83,7 +88,7 @@ public class CovidRestRepositoryImpl implements CovidRestRepository {
 	}
 
 	@Override
-	public List<CovidTotal> getTotal() {
+	public List<CovidTotal> getTotalCases() {
 		LOGGER.info("Start of getTotal method ==> ");
 		HttpHeaders headers = buildRequest();
 		HttpEntity<String> request = new HttpEntity<>(headers);
@@ -94,7 +99,11 @@ public class CovidRestRepositoryImpl implements CovidRestRepository {
 			response = restTemplate.exchange(totalApiUrl, HttpMethod.GET, request,
 					new ParameterizedTypeReference<List<CovidTotal>>() {
 					});
-		} catch (Exception e) {
+		}catch (CovidRapidAPIException e){
+			throw new CovidRapidAPIException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage(),
+					"Rapid API is currently Down. Please try after sometime.");
+		}
+		catch (Exception e) {
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(),
 					"Exception Occurred While Getting Data from Service");
 
@@ -111,7 +120,7 @@ public class CovidRestRepositoryImpl implements CovidRestRepository {
 	}
 
 	@Override
-	public List<CovidData> getCovidDataByName(String name) {
+	public List<CovidData> getCovidDataByCountryName(String name) {
 		LOGGER.info("Start of getCovidDataByName method ==> ");
 		HttpHeaders headers = buildRequest();
 		Map<String, String> queryMap = new HashMap<String, String>();
@@ -130,7 +139,11 @@ public class CovidRestRepositoryImpl implements CovidRestRepository {
 			}
 			LOGGER.info("End of Rest Template Exhange and response received {}  with size ==> ", resp, resp.size());
 			return resp;
-		} catch (Exception e) {
+		}catch (CovidRapidAPIException e){
+			throw new CovidRapidAPIException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage(),
+					"Rapid API is currently Down. Please try after sometime.");
+		}
+		catch (Exception e) {
 			LOGGER.error("Exception occurred{}", e);
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(),
 					"Exception Occurred While Getting Data from Service");
@@ -138,7 +151,7 @@ public class CovidRestRepositoryImpl implements CovidRestRepository {
 	}
 
 	@Override
-	public List<CovidData> getCovidDataByCode(String code) {
+	public List<CovidData> getCovidDataByCountryCode(String code) {
 		LOGGER.info("Start of getCovidDataByCode method ==> ");
 		HttpHeaders headers = buildRequest();
 		HttpEntity<String> request = new HttpEntity<>(headers);
@@ -157,7 +170,11 @@ public class CovidRestRepositoryImpl implements CovidRestRepository {
 			}
 			LOGGER.info("End of Rest Template Exhange and response received {}  with size ==> ", resp, resp.size());
 			return resp;
-		} catch (Exception e) {
+		}catch (CovidRapidAPIException e){
+			throw new CovidRapidAPIException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage(),
+					"Rapid API is currently Down. Please try after sometime.");
+		}
+		catch (Exception e) {
 			LOGGER.error("Exception occurred{}", e);
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(),
 					"Exception Occurred While Getting Data from Service");

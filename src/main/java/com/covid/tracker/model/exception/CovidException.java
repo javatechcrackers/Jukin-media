@@ -15,7 +15,7 @@ public class CovidException extends RuntimeException {
 
 	private HttpStatus status;
 
-	public CovidException(Exception e) {
+	public CovidException(HttpStatus status, Exception e) {
 		super(e);
 	}
 
@@ -25,7 +25,7 @@ public class CovidException extends RuntimeException {
 		this.exception = e;
 	}
 
-	public CovidException(String message, Exception e, HttpStatus status) {
+	public CovidException(HttpStatus status , String message, Exception e ) {
 		super(message, e);
 		this.message = message;
 		this.exception = e;

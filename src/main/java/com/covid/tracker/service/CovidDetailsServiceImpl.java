@@ -62,28 +62,22 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		List<Country> countries;
 		List<Country> countriesInDB;
 		try {
-			if(fetchDb) {
-				return Lists.newArrayList(countryRepository.findAll());
-			}
+			countriesInDB = Lists.newArrayList(countryRepository.findAll());
+
 			if (isOutdated) {
 				countries = covidRestRepository.getListOfCountries();
-				countriesInDB = Lists.newArrayList(countryRepository.findAll());
 				List<String> countriesName = countriesInDB.stream().map(Country::getName).collect(Collectors.toList());
 
 				countriesInDB.addAll(countries.stream().filter(o -> !countriesName.contains(o.getName()))
 						.collect(Collectors.toList()));
 				updateHistory("countries");
 				countryRepository.saveAll(countriesInDB);
-				isOutdated = false;
-
-			} else {
-				countriesInDB = Lists.newArrayList(countryRepository.findAll());
 			}
 
 		} catch (CovidRapidAPIException e) {
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "Excpetion occurred while getting data from Rapid API", e.getDetailedMessage());
 		} catch (Exception e) {
-			throw new CovidException(String.format("Excpetion occurred while updating get countries"), e);
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,String.format("Excpetion occurred while updating get countries"), e);
 		}
 
 		return countriesInDB;
@@ -102,7 +96,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 				return Lists.newArrayList(totalRepository.findAll());
 			}
 			if (isOutdated) {
-				covidDetails = covidRestRepository.getTotal();
+				covidDetails = covidRestRepository.getTotalCases();
 				final CovidTotal totals = covidDetails.get(0);
 				covidDetailsInDB = Lists.newArrayList(totalRepository.findAll());
 				// There will always be one record
@@ -129,7 +123,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		} catch (CovidRapidAPIException e) {
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "Excpetion occurred while getting data from Rapid API", e.getDetailedMessage());
 		} catch (Exception e) {
-			throw new CovidException(String.format("Excpetion occurred while updating total covid data"), e);
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,String.format("Excpetion occurred while updating total covid data"), e);
 		}
 
 		return covidDetailsInDB;
@@ -146,7 +140,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 				apiHistoryRepository.save(hist);
 			}
 		} catch (Exception e) {
-			throw new CovidException(
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,
 					String.format("Excpetion occurred while updating history with apiName {}", apiName), e);
 		}
 
@@ -163,7 +157,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 				apiHistoryRepository.save(hist);
 			}
 		} catch (Exception e) {
-			throw new CovidException(String
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,String
 					.format("Exception occurred while updating history with apiName %s and type %s", apiName, type), e);
 		}
 
@@ -171,7 +165,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 
 	@Override
 	@Transactional
-	public List<CovidData> getCovidDataByName(String name,boolean fetchDb) {
+	public List<CovidData> getCovidDataByCountryName(String name,boolean fetchDb) {
 		boolean isOutdated = checkOutDated("name", name);
 		CovidData covidDataInDB;
 		List<CovidData> covidData;
@@ -181,7 +175,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 			}
 			if (isOutdated) {
 				covidDataInDB = covidDataRepository.findByCountry(name);
-				covidData = covidRestRepository.getCovidDataByName(name);
+				covidData = covidRestRepository.getCovidDataByCountryName(name);
 				if (!CollectionUtils.isEmpty(covidData)) {
 					covidDataInDB = CovidData.copy(covidData.get(0), covidDataInDB);
 
@@ -196,7 +190,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		} catch (CovidRapidAPIException e) {
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "Excpetion occurred while getting data from Rapid API", e.getDetailedMessage());
 		} catch (Exception e) {
-			throw new CovidException(
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,
 					String.format("Exception occurred while getting covid data by country name %s", name), e);
 		}
 		return Collections.singletonList(covidDataInDB);
@@ -214,7 +208,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 			}
 			if (isOutdated) {
 				covidDataInDB = covidDataRepository.findByCode(code);
-				List<CovidData> covidDataFromService = covidRestRepository.getCovidDataByCode(code);
+				List<CovidData> covidDataFromService = covidRestRepository.getCovidDataByCountryCode(code);
 				// covidDataInDB = CovidData.copy(covidData, covidDataInDB);
 				if (CollectionUtils.isEmpty(covidDataFromService)) {
 					// throw exception from here or message
@@ -233,7 +227,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		} catch (CovidRapidAPIException e) {
 			throw new CovidRapidAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "Excpetion occurred while getting data from Rapid API", e.getDetailedMessage());
 		} catch (Exception e) {
-			throw new CovidException(
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,
 					String.format("Exception occurred while getting covid data by country code %s", code), e);
 		}
 		return Collections.singletonList(covidDataInDB);
@@ -250,7 +244,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 			}
 			countryRepository.save(dbCountry);
 		} catch (Exception e) {
-			throw new CovidException(
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,
 					String.format("Exception occurred while updating country with name %s", country.getName()), e);
 		}
 	}
@@ -294,7 +288,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 			}
 			return countriesCodeMap;
 		} catch (Exception e) {
-			throw new CovidException(String.format("Error Occurred while executing query please check"), e);
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,String.format("Error Occurred while executing query please check"), e);
 		}
 	}
 
@@ -318,7 +312,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		try {
 			CovidData result = covidDataRepository.findByCountry(body.get("name"));
 			if (null == result) {
-				throw new CovidException(
+				throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,
 						String.format("Comment with specified country name %s does not exist", body.get("name")),
 						new NullPointerException());
 			}
@@ -327,11 +321,11 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 			if (comment != null) {
 				result.getComments().add(comment);
 			} else {
-				throw new CovidException(new Exception("Comment cannot be null"));
+				throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR, new Exception("Comment cannot be null"));
 			}
 			covidDataRepository.save(result);
 		} catch (Exception e) {
-			throw new CovidException(String.format("Error while saving comment by country name %s", body.get("name")),
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Error while saving comment by country name %s", body.get("name")),
 					e);
 		}
 
@@ -342,7 +336,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		try {
 			CovidData result = covidDataRepository.findByCode(body.get("code"));
 			if (null == result) {
-				throw new CovidException(
+				throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR,
 						String.format("Comment with specified country code %s does not exist", body.get("code")),
 						new NullPointerException());
 			}
@@ -350,7 +344,7 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 			result.getComments().add(body.get("comment"));
 			covidDataRepository.save(result);
 		} catch (Exception e) {
-			throw new CovidException(String.format("Error while saving comment by country code %s", body.get("code")),
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Error while saving comment by country code %s", body.get("code")),
 					e);
 		}
 
@@ -361,13 +355,13 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		try {
 			CovidData result = covidDataRepository.findByCountry(name);
 			if (null == result) {
-				throw new CovidException(String.format("Comment with specified country code %s does not exist", name),
+				throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Comment with specified country code %s does not exist", name),
 						new Exception());
 			}
 
 			return result.getComments();
 		} catch (Exception e) {
-			throw new CovidException(String.format("Exception Occurred white executing findby country name ", name), e);
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Exception Occurred white executing findby country name ", name), e);
 		}
 	}
 
@@ -376,12 +370,12 @@ public class CovidDetailsServiceImpl implements CovidDetailsService {
 		try {
 			CovidData result = covidDataRepository.findByCode(code);
 			if (null == result) {
-				throw new CovidException(String.format("Comment with specified country code %s does not exist", code),
+				throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Comment with specified country code %s does not exist", code),
 						new Exception());
 			}
 			return result.getComments();
 		} catch (Exception e) {
-			throw new CovidException(String.format("Exception Occurred white executing findby country code ", code), e);
+			throw new CovidException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Exception Occurred white executing findby country code ", code), e);
 		}
 	}
 

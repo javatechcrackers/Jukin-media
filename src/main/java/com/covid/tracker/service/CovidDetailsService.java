@@ -20,7 +20,7 @@ public interface CovidDetailsService {
 		return Collections.emptyList();
 	}
 
-	List<CovidData> getCovidDataByName(String name,boolean fetchDb);
+	List<CovidData> getCovidDataByCountryName(String name,boolean fetchDb);
 
 	List<CovidData> getCovidDataByCode(String code,boolean fetchDb);
 

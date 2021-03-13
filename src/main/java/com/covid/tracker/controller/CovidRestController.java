@@ -8,15 +8,12 @@ import java.util.Set;
 import com.covid.tracker.service.CovidDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.covid.tracker.model.Country;
 import com.covid.tracker.model.exception.CovidRapidAPIException;
-import com.covid.tracker.service.CovidDetailsService;
+
+import javax.ws.rs.core.Response;
 
 @RestController
 public class CovidRestController {
@@ -28,12 +25,14 @@ public class CovidRestController {
 	public Object getAllCountries() {
 		try {
 			return covidDetailsService.getCountries(false);
+			//return Response.status(200).type(String.valueOf(MediaType.APPLICATION_JSON)).entity(covidDetailsService.getCountries(false)).build();
 		} catch (CovidRapidAPIException e) {
 			Object responseMap = new HashMap<>();
 			Object country = covidDetailsService.getCountries(true);
 			((HashMap<Object, Object>) responseMap).put("error", "Data is fetched from Database");
 			((HashMap) responseMap).put("response", country);
 			return responseMap;
+			//return Response.status(200).type(String.valueOf(MediaType.APPLICATION_JSON)).entity(responseMap).build();
 		}
 	}
 
@@ -54,10 +53,10 @@ public class CovidRestController {
 	@GetMapping(value = { "/covidDetailsByName/{name}" })
 	public Object getCovidDataByName(@PathVariable("name") String name) {
 		try {
-			return covidDetailsService.getCovidDataByName(name, false);
+			return covidDetailsService.getCovidDataByCountryName(name, false);
 		} catch (CovidRapidAPIException e) {
 			Object responseMap = new HashMap<>();
-			Object covidDataByName = covidDetailsService.getCovidDataByName(name, true);
+			Object covidDataByName = covidDetailsService.getCovidDataByCountryName(name, true);
 			((HashMap) responseMap).put("error", "Data is fetched from Database");
 			((HashMap) responseMap).put("response", covidDataByName);
 			return responseMap;
@@ -79,7 +78,7 @@ public class CovidRestController {
 
 	}
 
-	@PostMapping(value = { "/updateCountry" }, consumes = { MediaType.APPLICATION_JSON_VALUE })
+	@PutMapping(value = { "/updateCountry" }, consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public void getUpdatedCountry(@RequestBody Country country) {
 		covidDetailsService.updateCountry(country);
 	}

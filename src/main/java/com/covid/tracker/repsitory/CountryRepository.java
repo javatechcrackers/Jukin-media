@@ -8,5 +8,5 @@ import com.covid.tracker.model.Country;
 @Repository
 public interface CountryRepository extends CrudRepository<Country, Long> {
 	
-	public Country findByName(String name);
+	Country findByName(String name);
 }

@@ -31,7 +31,7 @@ covidApp.service('covidDetailsService',function($http){
 			var body = {
 				"country": country
 			} 
-			return $http.post('/updateCountry',country) .then(success,error);
+			return $http.put('/updateCountry',country) .then(success,error);
 		}
 		this.addCommentByCode=function(code,comment){
 			var body = {

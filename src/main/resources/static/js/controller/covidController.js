@@ -15,8 +15,8 @@ covidApp.controller('covidController',
 				$scope.data=[];
 				$scope.viewComment=false;
 				$scope.addCovidComments = {
-					 comments: " ",
-					word: /^\s*\w*\s*$/
+					// comments: " ",
+					//word: /^\s*\w*\s*$/
 				}
 				$scope.selectedValue='';
 				$scope.method='';
@@ -169,7 +169,7 @@ covidApp.controller('covidController',
 				}
 				
 				$scope.addComments =  function(){
-					if($scope.addCovidComments.comments && $scope.addCovidComments.comments.trim().length !=0 ){
+					if($scope.addCovidComments.comments  ){
 						if($scope.method === 'code'){
 							$scope.addCommentsByCode($scope.selectedValue);
 						}
